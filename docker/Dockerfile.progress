@@ -7,6 +7,7 @@ RUN npm run build
 
 # Preserve the already verified Python/OpenClaw/browser dependency versions.
 FROM local/easel:chat-stream-media-20261001
+COPY easel/media_preview.py /app/easel/media_preview.py
 COPY easel/gateway_questions.py /app/easel/gateway_questions.py
 COPY web/app.py /app/web/app.py
 COPY web/frontend/src/ /app/web/frontend/src/

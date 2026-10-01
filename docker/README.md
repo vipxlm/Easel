@@ -73,3 +73,11 @@ Web 使用 HTTP 首个 role chunk 的 run id 匹配原生流，两路正文择�
 设置新增「看图」通道，使用独立 `EASEL_VISION_MODEL`、`EASEL_VISION_BASE_URL`、`EASEL_VISION_API_KEY`；Key 只脱敏返回，换地址必须重填 Key。图片先经过当前会话所有权检查和 EXIF 方向校正，缩放至最长边 1600 后一次性请求 OpenAI-compatible chat completions，显式 `reasoning_effort=low`。识别文字作为素材交给主模型，失败时明确报错，不继续盲目读图。未上传图片的请求不调用看图模型。
 
 当前看图模型 gpt-6-luna，主模型 opencode/deepseek-v4.1-flash。真实红蓝测试及浏览器仅上传图片流程通过；原会话里的 Playwright 缺失属于制卡工具问题，本次未安装新依赖。运行文件回退备份为 `web/app.py.bak-chat-vision`、`web/frontend/dist.bak-chat-vision`、`.env.bak-chat-vision`；回退镜像 `local/easel:chat-progress-20261001`。
+
+## WebP 预览与主题（2026-10-01）
+
+聊天、上传附件、内容库和发布媒体选择器默认通过 `?preview=1` 请求最长边 640 像素、质量 68 的 WebP，点击聊天及内容详情图片打开原图。原图不修改；派生图缓存于系统临时目录 `easel-image-previews`，按原文件路径、修改时间和大小失效。SVG、视频、登录二维码沿用原始资源。
+
+侧边栏可切换白天/黑夜主题，首次跟随系统，选择保存于浏览器 `easel_theme`；页面、设置面板和弹窗共用主题颜色。
+
+本机运行镜像 `local/easel:webp-themes-20261001`。运行卷回退备份为 `web/app.py.bak-webp-themes`、`web/frontend/dist.bak-webp-themes`；仅恢复这些文件、切回前一镜像并重建 easel 服务，保留业务数据卷。

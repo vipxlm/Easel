@@ -3235,9 +3235,18 @@ async def api_output(path: str):
 
 
 @app.get("/api/media/{path:path}")
-async def api_media(path: str):
+async def api_media(path: str, preview: bool = False):
     """原样输出媒体文件（图片/视频/音频/HTML/PDF），供 <img>/<video>/iframe/下载。"""
     full = _safe_output_path(path)
+    if preview:
+        if full.suffix.lower() not in {".png", ".jpg", ".jpeg", ".webp", ".gif", ".avif", ".bmp", ".ico"}:
+            raise HTTPException(415, "此文件不支持图片预览")
+        from easel.media_preview import image_preview
+        try:
+            thumbnail = await asyncio.to_thread(image_preview, full)
+        except (OSError, ValueError):
+            raise HTTPException(415, "图片无法读取") from None
+        return FileResponse(thumbnail, media_type="image/webp", headers={"Cache-Control": "private, no-cache"})
     # HTML 预览会在本地被就地重新生成（如 gzh-design 重排/内联图片），必须禁缓存，
     # 否则浏览器/代理按启发式缓存旧版 → 内容库 iframe 打开的是过期预览（复制粘贴带旧图 URL）。
     headers = ({"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache"}

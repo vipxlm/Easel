@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type { CSSProperties } from 'react';
-import { fetchOutputs, fetchOutputContent, mediaUrl, deleteOutput } from '../lib/api';
+import { fetchOutputs, fetchOutputContent, mediaUrl, mediaPreviewUrl, deleteOutput } from '../lib/api';
 import type { OutputNode, OutputMeta } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
 import { IconOutputs, IconImage, IconVideo, IconMusic, IconFile, IconFolder, IconRefresh, IconChevron, IconTrash } from './icons';
@@ -68,7 +68,7 @@ function resolvePath(roots: OutputNode[], names: string[]): OutputNode[] {
 }
 
 function Thumb({ f, big }: { f: OutputNode | null; big?: boolean }) {
-  if (f && f.kind === 'image') return <img src={mediaUrl(f.path)} alt="" loading="lazy" />;
+  if (f && f.kind === 'image') return <img src={mediaPreviewUrl(f.path)} alt="" loading="lazy" />;
   if (f && f.kind === 'video') return <video src={mediaUrl(f.path)} preload="metadata" muted />;
   return <div className="gcard-ph">{kindIcon(f?.kind, big ? 34 : 30)}</div>;
 }
@@ -161,7 +161,7 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
   const preview = () => {
     if (!selected) return null;
     const url = mediaUrl(selected.path);
-    if (selected.kind === 'image') return <img src={url} alt={selected.name} style={{ maxWidth: '100%', borderRadius: 'var(--radius)' }} />;
+    if (selected.kind === 'image') return <a href={url} target="_blank" rel="noopener noreferrer" title="点击查看原图"><img className="output-image-preview" src={mediaPreviewUrl(selected.path)} alt={selected.name} loading="lazy" /></a>;
     if (selected.kind === 'video') return <video src={url} controls style={{ maxWidth: '100%', borderRadius: 'var(--radius)' }} />;
     if (selected.kind === 'audio') return <audio src={url} controls style={{ width: '100%' }} />;
     if (selected.kind === 'text' && isHtml(selected.name)) return (

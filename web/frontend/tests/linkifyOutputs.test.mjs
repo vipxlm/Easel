@@ -5,7 +5,7 @@ import ts from 'typescript';
 const source = readFileSync(new URL('../src/lib/linkifyOutputs.ts', import.meta.url), 'utf8')
   .replace("import { mediaUrl } from './api';", "const mediaUrl = (p: string) => '/api/media/' + p.split('/').map(encodeURIComponent).join('/');");
 const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2023}}).outputText;
-const {linkifyOutputs} = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
+const {linkifyOutputs, previewLocalImages} = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
 test('local markdown images and file links use the media endpoint', () => {
   for (const path of ['outputs/测试/a.png', '/app/outputs/测试/a.png', 'sandbox:/app/outputs/测试/a.png']) {
     assert.equal(linkifyOutputs(`![图片](${path})`), '![图片](/api/media/%E6%B5%8B%E8%AF%95/a.png)');
@@ -29,4 +29,17 @@ test('native MEDIA markers render every generated card', () => {
 });
 test('MEDIA conversion preserves external URLs and command examples', () => {
   for(const text of ['MEDIA:https://example.com/outputs/a.png','```sh\nMEDIA:/app/outputs/a.png\n```','`echo MEDIA:/app/outputs/a.png`']) assert.equal(linkifyOutputs(text),text);
+});
+
+test('local images load previews and click through to originals', () => {
+  const source='<img src="/api/media/项目/图.png" alt="图">';
+  const html=previewLocalImages(source);
+  assert.ok(html.includes('href="/api/media/项目/图.png"'));
+  assert.ok(html.includes('src="/api/media/项目/图.png?preview=1"'));
+  assert.ok(html.includes('loading="lazy"'));
+  assert.equal(previewLocalImages(html),html);
+  const linked=previewLocalImages(`<a href="/api/media/项目/图.png">${source}</a>`);
+  assert.equal((linked.match(/<a /g)||[]).length,1);
+  assert.ok(linked.includes('?preview=1'));
+  for(const unchanged of ['<img src="https://example.com/a.png">','<img src="/api/media/a.svg">']) assert.equal(previewLocalImages(unchanged),unchanged);
 });

@@ -290,6 +290,12 @@ export function mediaUrl(path: string): string {
   return `${BASE}/api/media/${path.split('/').map(encodeURIComponent).join('/')}`;
 }
 
+/** 图片预览使用缓存的低分辨率 WebP，原始地址仍用于打开/下载。 */
+export function mediaPreviewUrl(path: string): string {
+  const url = mediaUrl(path);
+  return /\.(png|jpe?g|gif|webp|avif|bmp|ico)$/i.test(path) ? `${url}?preview=1` : url;
+}
+
 /** 删除内容库里的文件或整个项目目录（系统数据受保护，后端会拒）。 */
 export function deleteOutput(path: string): Promise<{ ok: boolean; deleted: string }> {
   return request(`/api/output/${path.split('/').map(encodeURIComponent).join('/')}`, { method: 'DELETE' });

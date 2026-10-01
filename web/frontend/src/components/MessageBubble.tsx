@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { ChatMessage } from '../lib/store';
-import { mediaUrl } from '../lib/api';
+import { mediaUrl, mediaPreviewUrl } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
-import { linkifyOutputs, externalizeMediaLinks } from '../lib/linkifyOutputs';
+import { linkifyOutputs, externalizeMediaLinks, previewLocalImages } from '../lib/linkifyOutputs';
 import { IconCopy, IconCheck, IconRetry } from './icons';
 
 export interface BubbleActions {
@@ -56,7 +56,7 @@ export default function MessageBubble({ message, isStreaming, thinking, activity
     // 误判成目录、未闭合的 ``` 会误伤命令示例里的 outputs/），转换只在流式结束后
     // 对完整正文做一次，避免闪烁成错误链接再跳变。
     const body = isStreaming ? message.content : linkifyOutputs(message.content);
-    return externalizeMediaLinks(renderMarkdown(body));
+    return previewLocalImages(externalizeMediaLinks(renderMarkdown(body)));
   }, [message.content, message.role, isStreaming]);
 
   // ---- 用户消息 ----
@@ -70,7 +70,7 @@ export default function MessageBubble({ message, isStreaming, thinking, activity
             {attachments.length > 0 && <div className="message-attachments">
               {attachments.map((file) => (
                 <a key={file.id || file.path} href={mediaUrl(file.path)} target="_blank" rel="noopener noreferrer" className="message-attachment">
-                  {/\.(png|jpe?g|gif|webp|avif|bmp)$/i.test(file.name) && <img src={mediaUrl(file.path)} alt={file.name} loading="lazy" />}
+                  {/\.(png|jpe?g|gif|webp|avif|bmp)$/i.test(file.name) && <img src={mediaPreviewUrl(file.path)} alt={file.name} loading="lazy" />}
                   <span>{file.name}</span>
                 </a>
               ))}

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   createSchedule, executeSkill, runAgent, streamChat,
-  fetchAccounts, publishNow, publishStatus, submitPublishSms, fetchOutputs, mediaUrl,
+  fetchAccounts, publishNow, publishStatus, submitPublishSms, fetchOutputs, mediaPreviewUrl,
 } from '../lib/api';
 import type { AccountItem, OutputFile } from '../lib/api';
 import { loadPublishDraft, savePublishDraft } from '../lib/store';
@@ -329,7 +329,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
           {selectedMedia.map((path) => (
             <div key={path} className="media-chip" onClick={() => toggleMedia(path)} title="点击移除">
               {mediaFiles.find((f) => f.path === path)?.kind === 'image'
-                ? <img src={mediaUrl(path)} alt="" /> : <span className="media-vid">🎬</span>}
+                ? <img src={mediaPreviewUrl(path)} alt="" /> : <span className="media-vid">🎬</span>}
               <span className="media-x">×</span>
             </div>
           ))}
@@ -342,7 +342,7 @@ export default function PublishPage({ persona }: PublishPageProps) {
                 className={`media-cell ${selectedMedia.includes(f.path) ? 'sel' : ''}`}
                 onClick={() => toggleMedia(f.path)} title={f.path}>
                 {f.kind === 'image'
-                  ? <img src={mediaUrl(f.path)} alt={f.name} loading="lazy" />
+                  ? <img src={mediaPreviewUrl(f.path)} alt={f.name} loading="lazy" />
                   : <span className="media-vid">🎬<br />{f.name.slice(0, 12)}</span>}
                 {selectedMedia.includes(f.path) && <span className="media-check">✓</span>}
               </div>
