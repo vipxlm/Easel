@@ -75,7 +75,10 @@ function renderPath(token: string): string {
 
 function transformSegment(seg: string): string {
   if (!seg.includes('outputs')) return seg;   // 快速路径
-  let s = seg.replace(ABS_PREFIX, 'outputs/');
+  // OpenClaw emits local attachments as standalone MEDIA: lines.
+  // Strip only known local output prefixes, keeping external URLs and code intact.
+  let s = seg.replace(/(^|\n)[ \t]*MEDIA:[ \t]*(?:\/app\/)?outputs\//g, '$1outputs/');
+  s = s.replace(ABS_PREFIX, 'outputs/');
   s = s.replace(/outputs[\\/]/g, 'outputs/'); // 相对路径里的反斜杠分隔符
   return s.replace(OUT_RE, renderPath);
 }

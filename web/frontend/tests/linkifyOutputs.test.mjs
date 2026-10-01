@@ -18,3 +18,15 @@ test('remote URLs, command examples and already converted paths stay intact', ()
   const text = linkifyOutputs('outputs/a.png');
   assert.equal(linkifyOutputs(text), text);
 });
+
+test('native MEDIA markers render every generated card', () => {
+  const paths=Array.from({length:6},(_,i)=>`重芝士巴斯克/images/card_${i+1}.png`);
+  const message='搞定啦\n\n'+paths.map(p=>`MEDIA:/app/outputs/${p}`).join('\n')+'\n\n标题';
+  const rendered=linkifyOutputs(message);
+  for(const path of paths) assert.ok(rendered.includes(`](/api/media/${path.split('/').map(encodeURIComponent).join('/')})`));
+  assert.ok(!rendered.includes('MEDIA:'));
+  assert.equal(linkifyOutputs(rendered),rendered);
+});
+test('MEDIA conversion preserves external URLs and command examples', () => {
+  for(const text of ['MEDIA:https://example.com/outputs/a.png','```sh\nMEDIA:/app/outputs/a.png\n```','`echo MEDIA:/app/outputs/a.png`']) assert.equal(linkifyOutputs(text),text);
+});
