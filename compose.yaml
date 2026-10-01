@@ -1,0 +1,35 @@
+name: easel
+services:
+  easel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: local/easel:latest
+    container_name: easel
+    hostname: easel
+    stop_grace_period: 45s
+    init: true
+    restart: unless-stopped
+    ports:
+      - "0.0.0.0:7870:7870"
+    environment:
+      EASEL_PORT: "7870"
+      EASEL_THINKING_LEVEL: "low"
+      TZ: Asia/Shanghai
+      EASEL_EXTRA_HOSTS: "192.168.10.132,192.168.10.133"
+      EASEL_EXTRA_ORIGINS: "http://192.168.10.132:7870,http://192.168.10.133:7870"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    shm_size: 1gb
+    volumes:
+      - app:/app
+      - home:/root
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:7870/ >/dev/null && curl -fsS http://127.0.0.1:37289/healthz >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      start_period: 180s
+      retries: 3
+volumes:
+  app:
+  home:

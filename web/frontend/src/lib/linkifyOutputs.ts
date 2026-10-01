@@ -12,7 +12,7 @@ import { mediaUrl } from './api';
  * - 其他文件      → 可点击链接（/api/media 直开/下载，新标签页）
  * - 目录          → `#/outputs/<路径>` 锚点，由 App 监听 hashchange 跳内容库对应层级
  * - 绝对路径      → 先归一成 outputs/ 相对路径再分类（盘符 / ~ / POSIX 前缀都收敛掉）
- * - 围栏代码块 / 已有 markdown 链接 → 一律不动（防破坏命令示例，保证幂等）
+ * - 围栏代码块 → 不动；已有 markdown 链接仅修正本地产物地址（防破坏命令示例，保证幂等）
  * - 行内代码      → agent 习惯把路径包在反引号里；仅当整个 code span 就是一个
  *                   产物路径时转为链接，路径嵌在命令中（如 `py x.py --output outputs/`）则不动
  */
@@ -36,7 +36,7 @@ const REST = '[^\\s`|~～<>"\'“”‘’()\\[\\]{}:,;，。；：！？、（�
 const OUT_RE = new RegExp(`(?<![A-Za-z0-9:.\\/])outputs\\/(?:${REST})+`, 'g');
 
 /** 受保护区：围栏代码块、行内代码、已有的 markdown 链接 —— 原样保留 */
-const PROTECT = /(```[\s\S]*?```|`[^`\n]*`|\[[^\]]*\]\([^)\n]*\))/g;
+const PROTECT = /(```[\s\S]*?```|`[^`\n]*`|!?\[[^\]]*\]\([^)\n]*\))/g;
 
 function toMediaUrl(outputsPath: string): string {
   const rel = outputsPath.replace(/^outputs\//, '');
@@ -101,6 +101,14 @@ export function linkifyOutputs(md: string): string {
       if (seg.length > 2 && seg.startsWith('`') && !seg.startsWith('```')) {
         const whole = asWholePath(seg);
         if (whole) return renderPath(whole);
+      }
+      // Markdown 图片/链接中的本地产物地址也必须走媒体接口。
+      const link = seg.match(/^(!?)\[([^\]]*)\]\(([^)\n]*)\)$/);
+      if (link) {
+        const target = link[3].replace(/^sandbox:|^file:\/\//, '').replace(ABS_PREFIX, 'outputs/').replace(/\\/g, '/');
+        if (WHOLE_PATH_RE.test(target)) {
+          return `${link[1] || (IMG_RE.test(target) ? '!' : '')}[${link[2]}](${toMediaUrl(target)})`;
+        }
       }
       return seg;
     })

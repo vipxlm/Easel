@@ -794,6 +794,7 @@ export interface ModelChannelsResponse {
   channels: {
     chat: ModelChannelRows;
     transcribe: ModelChannelRows;
+    vision?: ModelChannelRows;
     image?: ModelChannelRows;
     video?: ModelChannelRows;
     music?: ModelChannelRows;

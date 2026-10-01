@@ -250,13 +250,14 @@ def _sign(payload: str) -> str:
 class GatewayClient:
     """Minimal Gateway WS RPC client (operator role, v2 device auth)."""
 
-    def __init__(self, timeout: float = 12.0):
+    def __init__(self, timeout: float = 12.0, *, on_event=None):
         import websocket  # local import: keep module import cheap
 
         self._ws_lib = websocket
         self.ws = None
         self.timeout = timeout
         self._seq = 0
+        self.on_event = on_event
 
     def connect(self) -> None:
         import websocket  # noqa: F401
@@ -332,6 +333,13 @@ class GatewayClient:
         deadline = time.time() + (timeout or self.timeout)
         while time.time() < deadline:
             msg = json.loads(self.ws.recv())
+            if msg.get("type") == "event":
+                if self.on_event is not None:
+                    try:
+                        self.on_event(msg)
+                    except Exception:
+                        pass  # Progress must never break the question RPC.
+                continue
             if msg.get("id") == req_id:
                 if not msg.get("ok", False):
                     err = msg.get("error") or {}

@@ -563,6 +563,7 @@ textarea.field { resize: vertical; min-height: 90px; }
   background: transparent; border: none; padding: 0;
   border-radius: 0; max-width: 100%; box-shadow: none;
 }
+.message-bubble.assistant img { display: block; max-width: 100%; height: auto; }
 .message-bubble.assistant p { margin: 0 0 8px; }
 .message-bubble.assistant p:last-child { margin-bottom: 0; }
 .message-bubble.assistant h1, .message-bubble.assistant h2,
@@ -1335,3 +1336,7 @@ textarea.field { resize: vertical; min-height: 90px; }
 .settings-overlay .model-cell input.mock { min-width: 0; flex: 1 1 auto; }
 .settings-overlay .model-cell .adv-btn { flex: 0 0 auto; }
 
+
+.message-attachments { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.message-attachment { display: flex; flex-direction: column; gap: 4px; max-width: 240px; overflow-wrap: anywhere; }
+.message-bubble .message-attachment img { max-width: 240px; max-height: 240px; width: auto; height: auto; object-fit: contain; border-radius: 8px; }
