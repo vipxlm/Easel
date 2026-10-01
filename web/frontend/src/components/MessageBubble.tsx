@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { ChatMessage } from '../lib/store';
 import { mediaUrl, mediaPreviewUrl } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
-import { linkifyOutputs, externalizeMediaLinks, previewLocalImages } from '../lib/linkifyOutputs';
+import { linkifyOutputs, externalizeMediaLinks, previewLocalImages, groupChatImages } from '../lib/linkifyOutputs';
 import { IconCopy, IconCheck, IconRetry } from './icons';
 
 export interface BubbleActions {
@@ -56,7 +56,7 @@ export default function MessageBubble({ message, isStreaming, thinking, activity
     // 误判成目录、未闭合的 ``` 会误伤命令示例里的 outputs/），转换只在流式结束后
     // 对完整正文做一次，避免闪烁成错误链接再跳变。
     const body = isStreaming ? message.content : linkifyOutputs(message.content);
-    return previewLocalImages(externalizeMediaLinks(renderMarkdown(body)));
+    return groupChatImages(previewLocalImages(externalizeMediaLinks(renderMarkdown(body))));
   }, [message.content, message.role, isStreaming]);
 
   // ---- 用户消息 ----

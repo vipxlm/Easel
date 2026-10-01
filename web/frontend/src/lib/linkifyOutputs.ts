@@ -141,3 +141,13 @@ export function previewLocalImages(html: string): string {
   return html.replace(/<a\b[^>]*>[\s\S]*?<\/a>|<img\b[^>]*>/gi, segment =>
     segment.startsWith('<a') ? segment.replace(/<img\b[^>]*>/gi, tag => image(tag, false)) : image(segment, true));
 }
+
+/** Only consecutive image-only paragraphs become a horizontally scrollable gallery. */
+export function groupChatImages(html: string): string {
+  const picture = '<a\\b[^>]*>\\s*<img\\b[^>]*>\\s*</a>';
+  const paragraph = `<p>(?:\\s|<br\\s*/?>|${picture})+</p>`;
+  return html.replace(new RegExp(`(?:${paragraph}\\s*)+`, 'gi'), block => {
+    if ((block.match(/<img\b/gi) || []).length < 2) return block;
+    return `<div class="chat-image-strip" role="region" aria-label="图片，可横向滚动" tabindex="0">${block.replace(/<\/?p>|<br\s*\/?>/gi, '')}</div>`;
+  });
+}
