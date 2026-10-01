@@ -1,0 +1,13 @@
+FROM node:24-bookworm-slim AS frontend
+WORKDIR /frontend
+COPY web/frontend/package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY web/frontend/ ./
+RUN npm run build
+
+# Preserve the already verified Python/OpenClaw/browser dependency versions.
+FROM local/easel:chat-stream-media-20261001
+COPY easel/gateway_questions.py /app/easel/gateway_questions.py
+COPY web/app.py /app/web/app.py
+COPY web/frontend/src/ /app/web/frontend/src/
+COPY --from=frontend /frontend/dist /app/web/frontend/dist

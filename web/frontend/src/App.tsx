@@ -320,7 +320,7 @@ export default function App() {
         const a = streamAcc.current[sessionId]; if (!a) return;
         if (a.steps[a.steps.length - 1] !== status) a.steps.push(status);
         // 有真实活动状态 → 清掉防呆提示，让真实状态占据活动行
-        setStreams((p) => (p[sessionId] ? { ...p, [sessionId]: { ...p[sessionId], activity: status, stillWorking: undefined } } : p));
+        setStreams((p) => (p[sessionId] ? { ...p, [sessionId]: { ...p[sessionId], activity: a.steps.join('\n'), stillWorking: undefined } } : p));
       },
       // onInterrupted：SSE 被中断（长任务时代理掐断），但后端仍在跑并会落盘完整结果。
       // streamChat 会按 eventId 自动重连并补发遗漏事件；这里只更新用户可见状态。
@@ -412,7 +412,7 @@ export default function App() {
       (status) => {
         const a = streamAcc.current[sessionId]; if (!a) return;
         if (a.steps[a.steps.length - 1] !== status) a.steps.push(status);
-        setStreams((p) => (p[sessionId] ? { ...p, [sessionId]: { ...p[sessionId], activity: status } } : p));
+        setStreams((p) => (p[sessionId] ? { ...p, [sessionId]: { ...p[sessionId], activity: a.steps.join('\n') } } : p));
       },
       () => setStreams((p) => (p[sessionId]
         ? { ...p, [sessionId]: { ...p[sessionId], activity: '⏳ 正在自动续接…' } } : p)),

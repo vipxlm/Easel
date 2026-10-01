@@ -13,10 +13,11 @@ import { IconSlidersHorizontal, IconPackage, IconEllipsis } from './settingsIcon
 interface Props { onClose: () => void; }
 
 type Sec = 'model' | 'env' | 'more';
-type Chan = 'chat' | 'transcribe' | 'speech' | 'image' | 'video' | 'music';
+type Chan = 'vision' | 'chat' | 'transcribe' | 'speech' | 'image' | 'video' | 'music';
 
 const CHANNELS: { id: Chan; label: string }[] = [
   { id: 'chat', label: '对话与脚本' },
+  { id: 'vision', label: '看图' },
   { id: 'transcribe', label: '语音转写' },
   { id: 'speech', label: '配音' },
   { id: 'image', label: '生图' },
@@ -52,7 +53,7 @@ const hhmm = (ts: number) => {
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
-/** 设置（统一入口）：竖＝功能分类（模型配置 / 环境安装 / 更多设置），横＝模型六通道。 */
+/** 设置（统一入口）：竖＝功能分类（模型配置 / 环境安装 / 更多设置），横＝模型独立通道。 */
 export default function SettingsPanel({ onClose }: Props) {
   const [sec, setSec] = useState<Sec>('model');
   const [chan, setChan] = useState<Chan>('chat');
@@ -203,6 +204,7 @@ export default function SettingsPanel({ onClose }: Props) {
         setChatRows(d.channels.chat.rows || []);
         setTransRows(d.channels.transcribe.rows || []);
         setMediaRows({
+          vision: d.channels.vision?.rows || [],
           image: d.channels.image?.rows || [],
           video: d.channels.video?.rows || [],
           music: d.channels.music?.rows || [],
@@ -262,7 +264,8 @@ export default function SettingsPanel({ onClose }: Props) {
       setChatRows(d.channels.chat.rows || []);
       setTransRows(d.channels.transcribe.rows || []);
       setMediaRows({
-        image: d.channels.image?.rows || [],
+        vision: d.channels.vision?.rows || [],
+          image: d.channels.image?.rows || [],
         video: d.channels.video?.rows || [],
         music: d.channels.music?.rows || [],
         speech: d.channels.speech?.rows || [],
@@ -303,6 +306,7 @@ export default function SettingsPanel({ onClose }: Props) {
   };
 
   const SLOT_EDIT: Record<string, { model: boolean; base: boolean }> = {
+    vision: { model: true, base: true },
     openai: { model: true, base: true },
     relay: { model: true, base: true },
     // anthropic 也要能改 Base URL：官方直连之外，中转站/自建网关/兼容代理都靠它
@@ -520,7 +524,7 @@ export default function SettingsPanel({ onClose }: Props) {
         <div className="settings-body">
           <nav className="settings-nav">
             <button className={`snav${sec === 'model' ? ' active' : ''}`} onClick={() => setSec('model')}>
-              <IconSlidersHorizontal size={16} />模型配置<small>六个通道</small>
+              <IconSlidersHorizontal size={16} />模型配置<small>独立通道</small>
             </button>
             <button className={`snav${sec === 'env' ? ' active' : ''}`} onClick={() => setSec('env')}>
               <IconPackage size={16} />环境安装<small>{total ? (okCount === total ? '全就绪' : `${okCount}/${total}`) : '…'}</small>
@@ -606,6 +610,12 @@ export default function SettingsPanel({ onClose }: Props) {
                   </section>
                 )}
 
+                {chan === 'vision' && (
+                  <>
+                    <p className="hint">上传图片先由此模型识别，再交给主模型继续处理。思考级别固定为 low；与生图模型独立配置。</p>
+                    {renderBoard(mediaRows.vision || [], { onRow: (i, p) => updateMediaRow('vision', i, p) })}
+                  </>
+                )}
                 {chan === 'transcribe' && (
                   <section className="st-panel active">
                     <div className="panel-top">

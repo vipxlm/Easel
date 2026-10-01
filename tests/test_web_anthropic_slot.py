@@ -130,6 +130,14 @@ def test_openai_slot_still_unchanged(sandbox):
 def _capture_probes(monkeypatch):
     """拦住真实网络请求，记录每次探测的 (url, headers)。"""
     seen: list[tuple[str, dict]] = []
+    # Protocol tests must not depend on the developer machine's DNS/proxy.
+    # Keep private-IP targets subject to the real SSRF checks.
+    original_resolve = web.socket.getaddrinfo
+    def resolve(host, port, *args, **kwargs):
+        if host in ("api.openai.com", "api.anthropic.com"):
+            return [(web.socket.AF_INET, web.socket.SOCK_STREAM, 6, "", ("1.1.1.1", 0))]
+        return original_resolve(host, port, *args, **kwargs)
+    monkeypatch.setattr(web.socket, "getaddrinfo", resolve)
 
     class _Resp:
         status = 200
