@@ -5,7 +5,7 @@ import ts from 'typescript';
 const source = readFileSync(new URL('../src/lib/linkifyOutputs.ts', import.meta.url), 'utf8')
   .replace("import { mediaUrl } from './api';", "const mediaUrl = (p: string) => '/api/media/' + p.split('/').map(encodeURIComponent).join('/');");
 const js = ts.transpileModule(source, {compilerOptions: {module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2023}}).outputText;
-const {linkifyOutputs, previewLocalImages} = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
+const {linkifyOutputs, previewLocalImages, groupChatImages} = await import('data:text/javascript;base64,' + Buffer.from(js).toString('base64'));
 test('local markdown images and file links use the media endpoint', () => {
   for (const path of ['outputs/测试/a.png', '/app/outputs/测试/a.png', 'sandbox:/app/outputs/测试/a.png']) {
     assert.equal(linkifyOutputs(`![图片](${path})`), '![图片](/api/media/%E6%B5%8B%E8%AF%95/a.png)');
@@ -42,4 +42,17 @@ test('local images load previews and click through to originals', () => {
   assert.equal((linked.match(/<a /g)||[]).length,1);
   assert.ok(linked.includes('?preview=1'));
   for(const unchanged of ['<img src="https://example.com/a.png">','<img src="/api/media/a.svg">']) assert.equal(previewLocalImages(unchanged),unchanged);
+});
+
+test('consecutive image paragraphs scroll together without swallowing text or single images', () => {
+  const image='<a href="/api/media/a.png"><img src="/api/media/a.png?preview=1"></a>';
+  for (const block of [`<p>${image}<br>${image}</p>`, `<p>${image}</p>\n<p>${image}</p>`]) {
+    const html=groupChatImages(`<p>正文</p>${block}<p>标题</p>`);
+    assert.ok(html.includes('class="chat-image-strip"'));
+    assert.ok(html.startsWith('<p>正文</p>'));
+    assert.ok(html.endsWith('<p>标题</p>'));
+    assert.equal((html.match(/<img /g)||[]).length,2);
+    assert.equal(groupChatImages(html),html);
+  }
+  for (const html of [`<p>${image}</p>`, `<p>正文${image}${image}</p>`]) assert.equal(groupChatImages(html),html);
 });
