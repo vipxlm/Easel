@@ -12,6 +12,8 @@ import { IconGear } from './settingsIcons';
 export type Page = 'dashboard' | 'chat' | 'trends' | 'ideas' | 'calendar' | 'publish' | 'breakdown' | 'skills' | 'outputs' | 'accounts' | 'profile';
 
 interface SidebarProps {
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
   currentPage: Page;
   onPageChange: (page: Page) => void;
   personas: PersonaItem[];
@@ -41,6 +43,8 @@ const NAV: { page: Page; Icon: ComponentType<{ size?: number }>; label: string }
 ];
 
 export default function Sidebar({
+  theme,
+  onToggleTheme,
   currentPage,
   onPageChange,
   personas,
@@ -169,6 +173,12 @@ export default function Sidebar({
         )}
       </div>
 
+      <button className="theme-toggle" onClick={onToggleTheme} aria-pressed={theme === 'dark'} title={theme === 'dark' ? '切换到白天主题' : '切换到黑夜主题'}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
+          {theme === 'dark' ? <><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5" /></> : <path d="M20 15.5A8.5 8.5 0 0 1 8.5 4 8.5 8.5 0 1 0 20 15.5Z" />}
+        </svg>
+        <span>{theme === 'dark' ? '切换到白天' : '切换到黑夜'}</span>
+      </button>
       <div className="sidebar-status">
         <span className={`status-dot ${gatewayStatus === 'connected' ? '' : 'offline'}`} />
         {gatewayStatus === 'connected'

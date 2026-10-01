@@ -125,3 +125,19 @@ export function externalizeMediaLinks(html: string): string {
     '<a href="$1" target="_blank" rel="noreferrer"',
   );
 }
+
+/** Replace local raster image sources with previews, keeping original links clickable. */
+export function previewLocalImages(html: string): string {
+  const image = (tag: string, wrap: boolean): string => {
+    const src = tag.match(/\bsrc="([^"]+)"/);
+    if (!src || !/^\/(?:[^?#]*\/)?api\/media\/.+\.(png|jpe?g|gif|webp|avif|bmp|ico)(?:[?#]|$)/i.test(src[1])) return tag;
+    const original = src[1];
+    if (/[?&](?:amp;)?preview=1(?:&|#|$)/.test(original)) return tag;
+    const [base, ...fragment] = original.split('#');
+    const preview = `${base}${base.includes('?') ? '&amp;' : '?'}preview=1${fragment.length ? '#' + fragment.join('#') : ''}`;
+    const small = tag.replace(src[0], `src="${preview}" loading="lazy" decoding="async"`);
+    return wrap ? `<a href="${original}" target="_blank" rel="noopener noreferrer" class="image-preview-link" title="点击查看原图">${small}</a>` : small;
+  };
+  return html.replace(/<a\b[^>]*>[\s\S]*?<\/a>|<img\b[^>]*>/gi, segment =>
+    segment.startsWith('<a') ? segment.replace(/<img\b[^>]*>/gi, tag => image(tag, false)) : image(segment, true));
+}

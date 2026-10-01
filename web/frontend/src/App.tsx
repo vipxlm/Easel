@@ -45,6 +45,12 @@ function onboardingSeen(): boolean {
 }
 
 export default function App() {
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    try { localStorage.setItem('easel_theme', theme); } catch { /* private browsing */ }
+  }, [theme]);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [personas, setPersonas] = useState<PersonaItem[]>([]);
   const [selectedPersona, setSelectedPersona] = useState('');
@@ -766,6 +772,8 @@ export default function App() {
   return (
     <div className="app-layout">
       <Sidebar
+        theme={theme}
+        onToggleTheme={() => setTheme(value => value === 'dark' ? 'light' : 'dark')}
         currentPage={currentPage}
         onPageChange={setCurrentPage}
         personas={personas}

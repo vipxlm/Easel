@@ -105,7 +105,7 @@ export default function OnboardingWizard({ onClose, onCreated }: OnboardingWizar
     padding: '6px 13px', borderRadius: 999, fontSize: 13, cursor: 'pointer',
     border: '1px solid var(--border)',
     background: active ? 'var(--accent-gradient)' : 'var(--bg-elev)',
-    color: active ? '#fff' : 'var(--text)',
+    color: active ? 'var(--on-accent)' : 'var(--text)',
   });
 
   return (

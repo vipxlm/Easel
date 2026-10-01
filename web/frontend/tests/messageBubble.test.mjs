@@ -17,7 +17,7 @@ const Bubble = loaded.default || loaded;
 rmSync(cache, { recursive: true });
 test('attachment-only user message renders image and filename', () => {
  const html=renderToStaticMarkup(createElement(Bubble,{message:{role:'user',content:'',attachments:[{id:'a',name:'产品 图片.jpg',path:'_inbox/session/产品 图片.jpg'}]}}));
- assert.match(html, /<img/); assert.match(html, /产品 图片.jpg/); assert.match(html, /\/api\/media\/_inbox\/session\//);
+ assert.match(html, /<img/); assert.match(html, /\?preview=1/); assert.match(html, /产品 图片.jpg/); assert.match(html, /\/api\/media\/_inbox\/session\//);
 });
 test('non-image attachments remain visible as file links', () => {
  const html=renderToStaticMarkup(createElement(Bubble,{message:{role:'user',content:'说明',attachments:[{id:'b',name:'资料.pdf',path:'_inbox/session/资料.pdf'}]}}));
